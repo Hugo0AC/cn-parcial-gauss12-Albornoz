@@ -1,61 +1,45 @@
 from conteo import conteo_operaciones
+from verificacion import nuevo_estab
 
-def eliminacion_adelante(matriz, vector, conteo):
-    tam = len(matriz)
 
-    for i in range(tam - 1):
-        pivote = matriz[i][i]
-        for j in range(i + 1, tam):
-            objetivo = matriz[j][i]
-            multiplicador = objetivo / pivote #Division +1
-            conteo["MulDiv"] += 1
-            for k in range(i, tam):
-                matriz[j][k] -= multiplicador * matriz[i][k] #Multiplicacion +1, Resta +1
-                conteo["MulDiv"] += 1
-                conteo["SumRes"] += 1
-            vector[j] -= multiplicador * vector[i] #Multiplicacion +1, Resta +1
-            conteo["MulDiv"] += 1
-            conteo["SumRes"] += 1
-
-def sustitucion_atras(matriz, vector, conteo):
+def sustitucion_atras(matriz, vector):
     tam = len(matriz)
     sol = [0] * tam 
 
     for i in range(tam - 1, -1, -1):
         suma = 0
         for j in range(i + 1, tam):
-            suma += matriz[i][j] * sol[j] #Multiplicacion +1, Suma +1
-            conteo["MulDiv"] += 1
-            conteo["SumRes"] += 1
-        sol[i] = (vector[i] - suma) / matriz[i][i] #Division +1, Resta +1
-        conteo["MulDiv"] += 1
-        conteo["SumRes"] += 1
+            suma += matriz[i][j] * sol[j]
+        sol[i] = (vector[i] - suma) / matriz[i][i] 
 
     return sol
 
-def eliminacion_columna(matriz, vector, columna, conteo): #Eliminacion hacia adelante
+
+def eliminacion_adelante(matriz, vector, columna, conteo, estab): 
     tam = len(matriz)
     pivote = matriz[columna][columna]
-
     for j in range(columna + 1, tam):
         objetivo = matriz[j][columna]
         multiplicador = objetivo / pivote #Division +1
         conteo["MulDiv"] += 1
+        estab["MultMax"] = max(estab["MultMax"], abs(multiplicador))  
         for k in range(columna, tam):
             matriz[j][k] -= multiplicador * matriz[columna][k] #Multiplicacion +1, Resta +1
             conteo["MulDiv"] += 1
             conteo["SumRes"] += 1
+            if k > columna:  
+                estab["MaxElem"] = max(estab["MaxElem"], abs(matriz[j][k]))  
         vector[j] -= multiplicador * vector[columna] #Multiplicacion +1, Resta +1
         conteo["MulDiv"] += 1
         conteo["SumRes"] += 1
+
 
 def pivoteo_simple(matriz, vector, i, conteo):
     tam = len(matriz)
     fila_max = i
     for j in range(i + 1, tam):
         conteo["Comparacion"] += 1
-        if abs(matriz[j][i]) > abs(matriz[fila_max][i]): #Comparacion +1, Abs +2
-            conteo["Extra"] += 2
+        if abs(matriz[j][i]) > abs(matriz[fila_max][i]): #Comparacion +1
             fila_max = j
 
     if fila_max != i: 
@@ -82,29 +66,45 @@ def pivoteo_escalado(matriz, vector, i, conteo):
         vector[i], vector[fila_max] = vector[fila_max], vector[i] #Intercambio +1
         conteo["Intercambio"] += 2
 
+
 def gaussiana_simple(matriz, vector):
-    conteo_GS = conteo_operaciones()
-    eliminacion_adelante(matriz, vector, conteo_GS)
-    solucion = sustitucion_atras(matriz, vector, conteo_GS)
-    return solucion, conteo_GS
+    tam = len(matriz)
+    pasos = []
+    estab = nuevo_estab(matriz)  
+    for i in range(tam - 1):
+        conteo_pasos = conteo_operaciones()
+        eliminacion_adelante(matriz, vector, i, conteo_pasos, estab)  
+        pasos.append(conteo_pasos)
+
+    solucion = sustitucion_atras(matriz, vector)
+    return solucion, pasos, estab  
+
 
 def gaussiana_pivoteo_simple(matriz, vector):
-    conteo_GPS = conteo_operaciones()
     tam = len(matriz)
+    pasos = []
+    estab = nuevo_estab(matriz) 
     for i in range(tam - 1):
-        pivoteo_simple(matriz, vector, i, conteo_GPS)
-        eliminacion_columna(matriz, vector, i, conteo_GPS)
-    solucion = sustitucion_atras(matriz, vector, conteo_GPS)
-    return solucion, conteo_GPS
+        conteo_pasos = conteo_operaciones()
+        pivoteo_simple(matriz, vector, i, conteo_pasos)
+        eliminacion_adelante(matriz, vector, i, conteo_pasos, estab)  
+        pasos.append(conteo_pasos)
+    
+    solucion = sustitucion_atras(matriz, vector)
+    return solucion, pasos, estab  
+
 
 def gaussiana_pivoteo_escalado(matriz, vector):
-    conteo_GPE = conteo_operaciones()
     tam = len(matriz)
+    pasos = []
+    estab = nuevo_estab(matriz)  
     for i in range(tam - 1):
-        pivoteo_escalado(matriz, vector, i, conteo_GPE)
-        eliminacion_columna(matriz, vector, i, conteo_GPE)
-    solucion = sustitucion_atras(matriz, vector, conteo_GPE)
-    return solucion, conteo_GPE
+        conteo_pasos = conteo_operaciones()
+        pivoteo_escalado(matriz, vector, i, conteo_pasos)
+        eliminacion_adelante(matriz, vector, i, conteo_pasos, estab)  
+        pasos.append(conteo_pasos)
+    solucion = sustitucion_atras(matriz, vector)
+    return solucion, pasos, estab  
 
 def mostrar_matriz(matriz, vector, solucion):
     for i in range(len(matriz)):
@@ -143,8 +143,11 @@ if __name__ == "__main__":
     -12069.33152836593874
     ]
 
-    solucion, conteo = gaussiana_pivoteo_escalado(a12, b12)
+    solucion, conteo, estab = gaussiana_pivoteo_simple(a12, b12)
     mostrar_matriz(a12, b12, solucion)
     print("Conteo de operaciones:")
-    for categoria, cantidad in conteo.items():
-        print(f"  {categoria}: {cantidad}")
+    for pasos in conteo:
+        print(f"  {pasos}:")
+    print("Estadsticas:")
+    for clave, valor in estab.items():
+        print(f"  {clave}: {valor}")
