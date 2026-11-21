@@ -1,6 +1,7 @@
 import csv
 from copy import deepcopy  
 from decimal import getcontext  
+import numpy as np  
 
 def nuevo_estab(matriz):  
     inicial = max(abs(x) for fila in matriz for x in fila)  
@@ -64,3 +65,42 @@ def refinar(matriz, vector, solucion, metodo):
     norma_despues = norma_infinito(r_ref)
     getcontext().prec = 28
     return x, r_ref, [norma_antes, norma_despues]
+
+
+def digitos_iguales(valor, referencia):  
+    a = format(abs(valor), "f").replace(".", "").lstrip("0")
+    b = format(abs(referencia), "f").replace(".", "").lstrip("0")
+    cuenta = 0
+    for x, y in zip(a, b):
+        if x != y:
+            break
+        cuenta += 1
+    return cuenta
+
+def resultados(corridas, nombre = "resultados\\solucion.csv"):  
+    with open(nombre, "w", newline = "", encoding = "utf-8") as archivo:
+        w = csv.writer(archivo)
+        fila = ["incognita"]
+        for metodo, sol, sol_ref, referencia in corridas:
+            fila += [f"{metodo} sin refinar", "digitos correctos", f"{metodo} refinada", "digitos correctos refinada"]
+        w.writerow(fila)
+        for i in range(len(corridas[0][1])):
+            fila = [f"x{i + 1}"]
+            for metodo, sol, sol_ref, referencia in corridas:
+                fila += [sol[i], digitos_iguales(sol[i], referencia[i]),
+                         sol_ref[i], digitos_iguales(sol_ref[i], referencia[i])]
+            w.writerow(fila)
+
+def control_biblioteca(matriz, vector, soluciones, nombre = "resultados\\residuo.txt"): 
+    A = np.array([[float(v) for v in fila] for fila in matriz])
+    b = np.array([float(v) for v in vector])
+    x_np = np.linalg.solve(A, b)
+    with open(nombre, "a", encoding = "utf-8") as archivo:  
+        archivo.write("===== Control con biblioteca (numpy.linalg.solve) =====\n")
+        for metodo, sol in soluciones:
+            mayor = 0
+            for i in range(len(sol)):
+                dif = abs(float(sol[i]) - x_np[i])
+                if dif > mayor:
+                    mayor = dif
+            archivo.write(f"{metodo}: diferencia maxima con numpy = {mayor}\n")

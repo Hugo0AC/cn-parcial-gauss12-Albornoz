@@ -60,3 +60,6 @@ r11 = 0E-41
 r12 = 0E-34
 Norma infinito = [Decimal('5.94440572848E-22'), 0]
 
+===== Control con biblioteca (numpy.linalg.solve) =====
+Sin pivoteo: diferencia maxima con numpy = 7.251976796851523e-13
+Pivoteo escalado: diferencia maxima con numpy = 7.251976796851523e-13

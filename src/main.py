@@ -1,12 +1,12 @@
 import csv
-from copy import deepcopy  #CAMBIO
+from copy import deepcopy  
 from decimal import Decimal, getcontext
 
 from gauss import gaussiana_simple, gaussiana_pivoteo_simple, gaussiana_pivoteo_escalado
 #Devuelven: solucion, pasos, estabilidad, traza
 
-from verificacion import resultados, residuo, norma_infinito, guardar_residuo, refinar
-from conteo import guardar_conteo
+from verificacion import resultados, residuo, norma_infinito, guardar_residuo, refinar, control_biblioteca  
+from conteo import guardar_conteo, guardar_estabilidad  
 
 
 def obtener_matriz(ruta_archivo):
@@ -53,26 +53,37 @@ if __name__ == "__main__":
     metodos = [("Sin pivoteo", gaussiana_simple),  
             ("Pivoteo escalado", gaussiana_pivoteo_escalado)]  
 
-    soluciones = []  
-    residuos = []  
-    conteos = []  
-    trazas = []  
+    soluciones = []
+    residuos = []
+    conteos = []
+    trazas = []
+    corridas = []  
+    estabs = []  
 
-    for nombre, metodo in metodos:  
-        solucion, pasos, estab, traza = metodo(deepcopy(matriz), deepcopy(vector)) 
+    for nombre, metodo in metodos:
+        solucion, pasos, estab, traza = metodo(deepcopy(matriz), deepcopy(vector))
+
+        getcontext().prec = 60  
+        referencia, p, e, t = metodo(deepcopy(matriz), deepcopy(vector))  
+        getcontext().prec = 28  
 
         getcontext().prec = 60 #precision para calular r
-        r = residuo(matriz, vector, solucion) 
+        r = residuo(matriz, vector, solucion)
         norma = norma_infinito(r)
         getcontext().prec = 28  #prfecision normal
 
-        sol_ref, r_ref, normas = refinar(matriz, vector, solucion, metodo)
-        soluciones.append((nombre, solucion))  
-        residuos.append((nombre, r, norma, r_ref, normas)) 
-        conteos.append((nombre, pasos))  
-        trazas.append((nombre, traza))  
+        sol_ref, r_ref, norma_ref = refinar(matriz, vector, solucion, metodo)
 
-    resultados(soluciones)  
-    guardar_residuo(residuos)  
-    guardar_traza(trazas)  
-    guardar_conteo(conteos)  
+        soluciones.append((nombre, solucion))
+        residuos.append((nombre, r, norma, r_ref, norma_ref))
+        conteos.append((nombre, pasos))
+        trazas.append((nombre, traza))
+        corridas.append((nombre, solucion, sol_ref, referencia))  
+        estabs.append((nombre, estab, solucion, referencia))  
+
+    resultados(corridas)  
+    guardar_residuo(residuos)
+    control_biblioteca(matriz, vector, soluciones)  
+    guardar_traza(trazas)
+    guardar_conteo(conteos)
+    guardar_estabilidad(estabs, matriz)  #
