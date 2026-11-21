@@ -30,8 +30,8 @@ def formato(numero):
     return f"{numero:.10e}"
 
 
-def guardar_traza(trazas, nombre="resultados\\traza_eliminacion.txt"):
-    with open(nombre, "w", encoding="utf-8") as archivo:
+def guardar_traza(trazas, nombre = "resultados\\traza_eliminacion.txt"):
+    with open(nombre, "w", encoding = "utf-8") as archivo:
         for k in range(len(trazas)):
             matriz, vector = trazas[k]
             archivo.write(f"Paso {k + 1}\n")
