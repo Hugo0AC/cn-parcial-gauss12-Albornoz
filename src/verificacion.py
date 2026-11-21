@@ -1,4 +1,6 @@
 import csv
+from copy import deepcopy  
+from decimal import getcontext  
 
 def nuevo_estab(matriz):  
     inicial = max(abs(x) for fila in matriz for x in fila)  
@@ -28,10 +30,37 @@ def norma_infinito(r):
             mayor = abs(valor)
     return mayor
 
-def guardar_residuo(corridas, nombre="resultados\\residuo.txt"):  
+def residuo_ext(matriz, vector, x): 
+    getcontext().prec = 60
+    r = residuo(matriz, vector, x)
+    getcontext().prec = 28
+    return r
+
+def guardar_residuo(corridas, nombre="resultados\\residuo.txt"):
     with open(nombre, "w", encoding = "utf-8") as archivo:
-        for metodo, r, norma in corridas:  
-            archivo.write(f"===== {metodo} =====\n")  
+        for metodo, r, norma, r_ref, norma_ref in corridas:  
+            archivo.write(f"===== {metodo} =====\n")
+            archivo.write("Residuo sin refinar\n")
             for i in range(len(r)):
                 archivo.write(f"r{i + 1} = {r[i]}\n")
-            archivo.write(f"Norma infinito = {norma}\n\n")  
+            archivo.write(f"Norma infinito = {norma}\n\n")
+            archivo.write("Residuo refinado (una pasada)\n")  
+            for i in range(len(r_ref)):
+                archivo.write(f"r{i + 1} = {r_ref[i]}\n")
+            archivo.write(f"Norma infinito = {norma_ref}\n\n")  
+
+def refinar(matriz, vector, solucion, metodo):  
+    tam = len(matriz)
+    x = solucion[:]
+    getcontext().prec = 60  #precision para calcular r
+    r = residuo(matriz, vector, x)
+    norma_antes = norma_infinito(r)
+    getcontext().prec = 28  #precision normal
+    d, pasos, estab, traza = metodo(deepcopy(matriz), deepcopy(r))  #resuelve A*d = r
+    for i in range(tam):
+        x[i] = x[i] + d[i]
+    getcontext().prec = 60
+    r_ref = residuo(matriz, vector, x)
+    norma_despues = norma_infinito(r_ref)
+    getcontext().prec = 28
+    return x, r_ref, [norma_antes, norma_despues]

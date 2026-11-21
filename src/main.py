@@ -5,7 +5,7 @@ from decimal import Decimal, getcontext
 from gauss import gaussiana_simple, gaussiana_pivoteo_simple, gaussiana_pivoteo_escalado
 #Devuelven: solucion, pasos, estabilidad, traza
 
-from verificacion import resultados, residuo, norma_infinito, guardar_residuo
+from verificacion import resultados, residuo, norma_infinito, guardar_residuo, refinar
 from conteo import guardar_conteo
 
 
@@ -66,8 +66,9 @@ if __name__ == "__main__":
         norma = norma_infinito(r)
         getcontext().prec = 28  #prfecision normal
 
+        sol_ref, r_ref, normas = refinar(matriz, vector, solucion, metodo)
         soluciones.append((nombre, solucion))  
-        residuos.append((nombre, r, norma))  
+        residuos.append((nombre, r, norma, r_ref, normas)) 
         conteos.append((nombre, pasos))  
         trazas.append((nombre, traza))  
 

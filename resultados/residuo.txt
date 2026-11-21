@@ -1,4 +1,5 @@
 ===== Sin pivoteo =====
+Residuo sin refinar
 r1 = -1.25310181348E-32
 r2 = -4.64015435135675E-20
 r3 = -3.08106992481004E-27
@@ -13,7 +14,23 @@ r11 = -7.94829100544964E-27
 r12 = 1.814680804842445E-19
 Norma infinito = 2.217625182019716E-18
 
+Residuo refinado (una pasada)
+r1 = 0E-43
+r2 = 0E-34
+r3 = 0E-41
+r4 = 0E-35
+r5 = 0E-43
+r6 = 0E-33
+r7 = 0E-40
+r8 = 0E-34
+r9 = 0E-43
+r10 = 0E-35
+r11 = 0E-41
+r12 = 0E-34
+Norma infinito = [Decimal('2.217625182019716E-18'), 0]
+
 ===== Pivoteo escalado =====
+Residuo sin refinar
 r1 = -1.61114369504E-32
 r2 = 2.55066302120E-23
 r3 = -8.11882595982E-30
@@ -27,4 +44,19 @@ r10 = -4.04259787164E-24
 r11 = 1.551135716198E-29
 r12 = 2.482120008320E-22
 Norma infinito = 5.94440572848E-22
+
+Residuo refinado (una pasada)
+r1 = 0E-43
+r2 = 0E-34
+r3 = 0E-41
+r4 = 0E-35
+r5 = 0E-43
+r6 = 0E-33
+r7 = 0E-40
+r8 = 0E-34
+r9 = 0E-43
+r10 = 0E-35
+r11 = 0E-41
+r12 = 0E-34
+Norma infinito = [Decimal('5.94440572848E-22'), 0]
 
