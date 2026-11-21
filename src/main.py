@@ -4,7 +4,8 @@ from decimal import Decimal, getcontext
 from gauss import gaussiana_simple, gaussiana_pivoteo_simple, gaussiana_pivoteo_escalado
 #Devuelven: solucion, pasos, estabilidad
 
-getcontext().prec = 50
+from verificacion import resultados
+
 
 def obtener_matriz(ruta_archivo):
     matriz = []
@@ -23,7 +24,6 @@ def obtener_vector(ruta_archivo):
     return vector
 
 
-
 if __name__ == "__main__":
     ruta_matriz = "datos\\matriz_a.csv"
     ruta_vector = "datos\\vector_b.csv"
@@ -31,6 +31,5 @@ if __name__ == "__main__":
     vector = obtener_vector(ruta_vector)
 
     solucion, pasos, estab = gaussiana_simple(matriz, vector)
-    print("Solución:", solucion)
-    print("Pasos:", pasos)
-    print("Estabilidad:", estab)
+
+    resultados(solucion)
