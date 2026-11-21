@@ -1,5 +1,6 @@
 from conteo import conteo_operaciones
 from verificacion import nuevo_estab
+from copy import deepcopy
 
 
 def sustitucion_atras(matriz, vector):
@@ -71,37 +72,43 @@ def gaussiana_simple(matriz, vector):
     tam = len(matriz)
     pasos = []
     estab = nuevo_estab(matriz)  
+    traza = []
     for i in range(tam - 1):
         conteo_pasos = conteo_operaciones()
         eliminacion_adelante(matriz, vector, i, conteo_pasos, estab)  
         pasos.append(conteo_pasos)
+        traza.append((deepcopy(matriz), deepcopy(vector)))
 
     solucion = sustitucion_atras(matriz, vector)
-    return solucion, pasos, estab  
+    return solucion, pasos, estab, traza
 
 
 def gaussiana_pivoteo_simple(matriz, vector):
     tam = len(matriz)
     pasos = []
     estab = nuevo_estab(matriz) 
+    traza = []
     for i in range(tam - 1):
         conteo_pasos = conteo_operaciones()
         pivoteo_simple(matriz, vector, i, conteo_pasos)
         eliminacion_adelante(matriz, vector, i, conteo_pasos, estab)  
         pasos.append(conteo_pasos)
+        traza.append((deepcopy(matriz), deepcopy(vector)))
     
     solucion = sustitucion_atras(matriz, vector)
-    return solucion, pasos, estab  
+    return solucion, pasos, estab, traza
 
 
 def gaussiana_pivoteo_escalado(matriz, vector):
     tam = len(matriz)
     pasos = []
     estab = nuevo_estab(matriz)  
+    traza = []
     for i in range(tam - 1):
         conteo_pasos = conteo_operaciones()
         pivoteo_escalado(matriz, vector, i, conteo_pasos)
         eliminacion_adelante(matriz, vector, i, conteo_pasos, estab)  
         pasos.append(conteo_pasos)
+        traza.append((deepcopy(matriz), deepcopy(vector)))
     solucion = sustitucion_atras(matriz, vector)
-    return solucion, pasos, estab  
+    return solucion, pasos, estab, traza

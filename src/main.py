@@ -4,7 +4,8 @@ from decimal import Decimal, getcontext
 from gauss import gaussiana_simple, gaussiana_pivoteo_simple, gaussiana_pivoteo_escalado
 #Devuelven: solucion, pasos, estabilidad
 
-from verificacion import resultados
+from verificacion import resultados, residuo, norma_infinito, guardar_residuo
+from conteo import guardar_conteo
 
 
 def obtener_matriz(ruta_archivo):
@@ -23,6 +24,22 @@ def obtener_vector(ruta_archivo):
             vector.append(Decimal(fila[0]))
     return vector
 
+def formato(numero):
+    if abs(numero) < Decimal("1E-20"):   
+        return "0"
+    return f"{numero:.10e}"
+
+
+def guardar_traza(trazas, nombre="resultados\\traza_eliminacion.txt"):
+    with open(nombre, "w", encoding="utf-8") as archivo:
+        for k in range(len(trazas)):
+            matriz, vector = trazas[k]
+            archivo.write(f"Paso {k + 1}\n")
+            for i in range(len(matriz)):
+                fila = "  ".join(formato(x) for x in matriz[i])
+                archivo.write(f"{fila}  |  {formato(vector[i])}\n")
+            archivo.write("\n")
+
 
 if __name__ == "__main__":
     ruta_matriz = "datos\\matriz_a.csv"
@@ -30,6 +47,15 @@ if __name__ == "__main__":
     matriz = obtener_matriz(ruta_matriz)
     vector = obtener_vector(ruta_vector)
 
-    solucion, pasos, estab = gaussiana_simple(matriz, vector)
+    solucion, pasos, estab, traza = gaussiana_pivoteo_escalado(matriz, vector)
 
     resultados(solucion)
+    getcontext().prec = 60 #precision para calular r
+    
+    r = residuo(matriz, vector, solucion)
+    norma = norma_infinito(r)
+    getcontext().prec = 28  #prfecision normal
+
+    guardar_residuo(r, norma)
+    guardar_traza(traza)
+    guardar_conteo(pasos)
