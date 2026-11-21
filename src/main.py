@@ -1,8 +1,9 @@
 import csv
+from copy import deepcopy  #CAMBIO
 from decimal import Decimal, getcontext
 
 from gauss import gaussiana_simple, gaussiana_pivoteo_simple, gaussiana_pivoteo_escalado
-#Devuelven: solucion, pasos, estabilidad
+#Devuelven: solucion, pasos, estabilidad, traza
 
 from verificacion import resultados, residuo, norma_infinito, guardar_residuo
 from conteo import guardar_conteo
@@ -30,15 +31,17 @@ def formato(numero):
     return f"{numero:.10e}"
 
 
-def guardar_traza(trazas, nombre = "resultados\\traza_eliminacion.txt"):
+def guardar_traza(corridas, nombre = "resultados\\traza_eliminacion.txt"):  
     with open(nombre, "w", encoding = "utf-8") as archivo:
-        for k in range(len(trazas)):
-            matriz, vector = trazas[k]
-            archivo.write(f"Paso {k + 1}\n")
-            for i in range(len(matriz)):
-                fila = "  ".join(formato(x) for x in matriz[i])
-                archivo.write(f"{fila}  |  {formato(vector[i])}\n")
-            archivo.write("\n")
+        for metodo, trazas in corridas:  
+            archivo.write(f"===== {metodo} =====\n\n")  
+            for k in range(len(trazas)):
+                matriz, vector = trazas[k]
+                archivo.write(f"Paso {k + 1}\n")
+                for i in range(len(matriz)):
+                    fila = "  ".join(formato(x) for x in matriz[i])
+                    archivo.write(f"{fila}  |  {formato(vector[i])}\n")
+                archivo.write("\n")
 
 
 if __name__ == "__main__":
@@ -47,15 +50,28 @@ if __name__ == "__main__":
     matriz = obtener_matriz(ruta_matriz)
     vector = obtener_vector(ruta_vector)
 
-    solucion, pasos, estab, traza = gaussiana_pivoteo_escalado(matriz, vector)
+    metodos = [("Sin pivoteo", gaussiana_simple),  
+            ("Pivoteo escalado", gaussiana_pivoteo_escalado)]  
 
-    resultados(solucion)
-    getcontext().prec = 60 #precision para calular r
-    
-    r = residuo(matriz, vector, solucion)
-    norma = norma_infinito(r)
-    getcontext().prec = 28  #prfecision normal
+    soluciones = []  
+    residuos = []  
+    conteos = []  
+    trazas = []  
 
-    guardar_residuo(r, norma)
-    guardar_traza(traza)
-    guardar_conteo(pasos)
+    for nombre, metodo in metodos:  
+        solucion, pasos, estab, traza = metodo(deepcopy(matriz), deepcopy(vector)) 
+
+        getcontext().prec = 60 #precision para calular r
+        r = residuo(matriz, vector, solucion) 
+        norma = norma_infinito(r)
+        getcontext().prec = 28  #prfecision normal
+
+        soluciones.append((nombre, solucion))  
+        residuos.append((nombre, r, norma))  
+        conteos.append((nombre, pasos))  
+        trazas.append((nombre, traza))  
+
+    resultados(soluciones)  
+    guardar_residuo(residuos)  
+    guardar_traza(trazas)  
+    guardar_conteo(conteos)  
